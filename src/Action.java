@@ -30,8 +30,8 @@ final class Action {
         this.entity.nextImage();
 
         if (this.repeatCount != 1) {
-            scheduleEvent(scheduler, this.entity,
-                    createAnimationAction(action.entity, Math.max(this.repeatCount - 1, 0)),
+            scheduler.scheduleEvent(this.entity,
+                    this.entity.createAnimationAction(Math.max(this.repeatCount - 1, 0)),
                     this.entity.getAnimationPeriod());
         }
     }

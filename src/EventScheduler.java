@@ -1,89 +1,108 @@
 import java.util.*;
 
-final class EventScheduler
-{
-   public PriorityQueue<Event> eventQueue;
-   public Map<Entity, List<Event>> pendingEvents;
-   public double timeScale;
+final class EventScheduler {
+    public PriorityQueue<Event> eventQueue;
+    public Map<Entity, List<Event>> pendingEvents;
+    public double timeScale;
 
-   public static final int QUAKE_ANIMATION_REPEAT_COUNT = 10;
 
-   public EventScheduler(double timeScale)
-   {
-      this.eventQueue = new PriorityQueue<>(new EventComparator());
-      this.pendingEvents = new HashMap<>();
-      this.timeScale = timeScale;
-   }
-   public void scheduleEvent(Entity entity, Action action, long afterPeriod) {
-      long time = System.currentTimeMillis() +
-              (long) (afterPeriod * this.timeScale);
-      Event event = new Event(action, time, entity);
+    public EventScheduler(double timeScale) {
+        this.eventQueue = new PriorityQueue<>(new EventComparator());
+        this.pendingEvents = new HashMap<>();
+        this.timeScale = timeScale;
+    }
 
-      this.eventQueue.add(event);
+    public void removePendingEvent(Event event) {
+        List<Event> pending = this.pendingEvents.get(event.entity);
 
-      // update list of pending events for the given entity
-      List<Event> pending = this.pendingEvents.getOrDefault(entity,
-              new LinkedList<>());
-      pending.add(event);
-      this.pendingEvents.put(entity, pending);
-   }
-   public void unscheduleAllEvents(Entity entity) {
-      List<Event> pending = this.pendingEvents.remove(entity);
+        if (pending != null) {
+            pending.remove(event);
+        }
+    }
 
-      if (pending != null) {
-         for (Event event : pending) {
-            this.eventQueue.remove(event);
-         }
-      }
-   }
-   public void scheduleActions(Entity entity, WorldModel world, ImageStore imageStore) {
-      switch (entity.kind) {
-         case MINER_FULL:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            this.scheduleEvent(entity, entity.createAnimationAction(0),
-                    entity.getAnimationPeriod());
-            break;
+    public void updateOnTime(long time) {
+        while (!this.eventQueue.isEmpty() &&
+                this.eventQueue.peek().time < time) {
+            Event next = this.eventQueue.poll();
 
-         case MINER_NOT_FULL:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            this.scheduleEvent(entity,
-                    entity.createAnimationAction(0), entity.getAnimationPeriod());
-            break;
+            removePendingEvent(next);
 
-         case ORE:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            break;
+            next.action.executeAction(this);
+        }
+    }
 
-         case ORE_BLOB:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            this.scheduleEvent(entity,
-                    entity.createAnimationAction(0), entity.getAnimationPeriod());
-            break;
+    public void scheduleEvent(Entity entity, Action action, long afterPeriod) {
+        long time = System.currentTimeMillis() +
+                (long) (afterPeriod * this.timeScale);
+        Event event = new Event(action, time, entity);
 
-         case QUAKE:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            this.scheduleEvent(entity,
-                    entity.createAnimationAction(QUAKE_ANIMATION_REPEAT_COUNT),
-                    entity.getAnimationPeriod());
-            break;
+        this.eventQueue.add(event);
 
-         case VEIN:
-            this.scheduleEvent(entity,
-                    entity.createActivityAction(world, imageStore),
-                    entity.actionPeriod);
-            break;
+        // update list of pending events for the given entity
+        List<Event> pending = this.pendingEvents.getOrDefault(entity,
+                new LinkedList<>());
+        pending.add(event);
+        this.pendingEvents.put(entity, pending);
+    }
 
-         default:
-      }
-   }
+    public void unscheduleAllEvents(Entity entity) {
+        List<Event> pending = this.pendingEvents.remove(entity);
+
+        if (pending != null) {
+            for (Event event : pending) {
+                this.eventQueue.remove(event);
+            }
+        }
+    }
+
+    public void scheduleActions(Entity entity, WorldModel world, ImageStore imageStore) {
+        switch (entity.kind) {
+            case MINER_FULL:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                this.scheduleEvent(entity, entity.createAnimationAction(0),
+                        entity.getAnimationPeriod());
+                break;
+
+            case MINER_NOT_FULL:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                this.scheduleEvent(entity,
+                        entity.createAnimationAction(0), entity.getAnimationPeriod());
+                break;
+
+            case ORE:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                break;
+
+            case ORE_BLOB:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                this.scheduleEvent(entity,
+                        entity.createAnimationAction(0), entity.getAnimationPeriod());
+                break;
+
+            case QUAKE:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                this.scheduleEvent(entity,
+                        entity.createAnimationAction(Functions.QUAKE_ANIMATION_REPEAT_COUNT),
+                        entity.getAnimationPeriod());
+                break;
+
+            case VEIN:
+                this.scheduleEvent(entity,
+                        entity.createActivityAction(world, imageStore),
+                        entity.actionPeriod);
+                break;
+
+            default:
+        }
+    }
 }
