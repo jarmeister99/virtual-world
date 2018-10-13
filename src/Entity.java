@@ -5,6 +5,7 @@ import java.util.Random;
 import processing.core.PImage;
 
 final class Entity {
+
     public EntityKind kind;
     public String id;
     public Point position;
@@ -14,6 +15,22 @@ final class Entity {
     public int resourceCount;
     public int actionPeriod;
     public int animationPeriod;
+
+    private static final String BLOB_KEY = "blob";
+    private static final String BLOB_ID_SUFFIX = " -- blob";
+    private static final int BLOB_PERIOD_SCALE = 4;
+    private static final int BLOB_ANIMATION_MIN = 50;
+    private static final int BLOB_ANIMATION_MAX = 150;
+
+    private static final String QUAKE_KEY = "quake";
+    private static final String QUAKE_ID = "quake";
+    private static final int QUAKE_ACTION_PERIOD = 1100;
+    private static final int QUAKE_ANIMATION_PERIOD = 100;
+
+    private static final String ORE_ID_PREFIX = "ore -- ";
+    private static final int ORE_CORRUPT_MIN = 20000;
+    private static final int ORE_CORRUPT_MAX = 30000;
+    private static final String ORE_KEY = "ore";
 
 
     public static final Random rand = new Random();
@@ -100,11 +117,11 @@ final class Entity {
         world.removeEntity(this);
         scheduler.unscheduleAllEvents(this);
 
-        Entity blob = createOreBlob(this.id + Functions.BLOB_ID_SUFFIX,
-                pos, this.actionPeriod / Functions.BLOB_PERIOD_SCALE,
-                Functions.BLOB_ANIMATION_MIN +
-                        rand.nextInt(Functions.BLOB_ANIMATION_MAX - Functions.BLOB_ANIMATION_MIN),
-                imageStore.getImageList(Functions.BLOB_KEY));
+        Entity blob = createOreBlob(this.id + BLOB_ID_SUFFIX,
+                pos, this.actionPeriod / BLOB_PERIOD_SCALE,
+                BLOB_ANIMATION_MIN +
+                        rand.nextInt(BLOB_ANIMATION_MAX - BLOB_ANIMATION_MIN),
+                imageStore.getImageList(BLOB_KEY));
 
         world.addEntity(blob);
         scheduler.scheduleActions(blob, world, imageStore);
@@ -119,7 +136,7 @@ final class Entity {
             Point tgtPos = blobTarget.get().position;
 
             if (moveToOreBlob(world, blobTarget.get(), scheduler)) {
-                Entity quake = createQuake(tgtPos, imageStore.getImageList(Functions.QUAKE_KEY));
+                Entity quake = createQuake(tgtPos, imageStore.getImageList(QUAKE_KEY));
 
                 world.addEntity(quake);
                 nextPeriod += this.actionPeriod;
@@ -141,10 +158,10 @@ final class Entity {
         Optional<Point> openPt = world.findOpenAround(this.position);
 
         if (openPt.isPresent()) {
-            Entity ore = createOre(Functions.ORE_ID_PREFIX + this.id,
-                    openPt.get(), Functions.ORE_CORRUPT_MIN +
-                            rand.nextInt(Functions.ORE_CORRUPT_MAX - Functions.ORE_CORRUPT_MIN),
-                    imageStore.getImageList(Functions.ORE_KEY));
+            Entity ore = createOre(ORE_ID_PREFIX + this.id,
+                    openPt.get(), ORE_CORRUPT_MIN +
+                            rand.nextInt(ORE_CORRUPT_MAX - ORE_CORRUPT_MIN),
+                    imageStore.getImageList(ORE_KEY));
             world.addEntity(ore);
             scheduler.scheduleActions(ore, world, imageStore);
         }
@@ -321,8 +338,8 @@ final class Entity {
     }
 
     public static Entity createQuake(Point position, List<PImage> images) {
-        return new Entity(EntityKind.QUAKE, Functions.QUAKE_ID, position, images,
-                0, 0, Functions.QUAKE_ACTION_PERIOD, Functions.QUAKE_ANIMATION_PERIOD);
+        return new Entity(EntityKind.QUAKE, QUAKE_ID, position, images,
+                0, 0, QUAKE_ACTION_PERIOD, QUAKE_ANIMATION_PERIOD);
     }
 
     public static Entity createVein(String id, Point position, int actionPeriod,

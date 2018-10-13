@@ -5,6 +5,8 @@ final class EventScheduler {
     public Map<Entity, List<Event>> pendingEvents;
     public double timeScale;
 
+    private static final int QUAKE_ANIMATION_REPEAT_COUNT = 10;
+
 
     public EventScheduler(double timeScale) {
         this.eventQueue = new PriorityQueue<>(new EventComparator());
@@ -92,7 +94,7 @@ final class EventScheduler {
                         entity.createActivityAction(world, imageStore),
                         entity.actionPeriod);
                 this.scheduleEvent(entity,
-                        entity.createAnimationAction(Functions.QUAKE_ANIMATION_REPEAT_COUNT),
+                        entity.createAnimationAction(QUAKE_ANIMATION_REPEAT_COUNT),
                         entity.getAnimationPeriod());
                 break;
 
