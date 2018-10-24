@@ -1,9 +1,9 @@
 import java.util.*;
 
 final class EventScheduler {
-    public PriorityQueue<Event> eventQueue;
-    public Map<Entity, List<Event>> pendingEvents;
-    public double timeScale;
+    private PriorityQueue<Event> eventQueue;
+    private Map<Entity, List<Event>> pendingEvents;
+    private double timeScale;
 
     private static final int QUAKE_ANIMATION_REPEAT_COUNT = 10;
 
@@ -14,7 +14,7 @@ final class EventScheduler {
         this.timeScale = timeScale;
     }
 
-    public void removePendingEvent(Event event) {
+    private void removePendingEvent(Event event) {
         List<Event> pending = this.pendingEvents.get(event.entity);
 
         if (pending != null) {

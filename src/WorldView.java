@@ -5,11 +5,11 @@ import java.util.Optional;
 
 final class WorldView
 {
-   public PApplet screen;
-   public WorldModel world;
-   public int tileWidth;
-   public int tileHeight;
-   public Viewport viewport;
+   private PApplet screen;
+   private WorldModel world;
+   private int tileWidth;
+   private int tileHeight;
+   private Viewport viewport;
 
    public WorldView(int numRows, int numCols, PApplet screen, WorldModel world,
       int tileWidth, int tileHeight)
@@ -30,7 +30,7 @@ final class WorldView
       this.viewport.shift(newCol, newRow);
    }
 
-   public void drawBackground() {
+   private void drawBackground() {
       for (int row = 0; row < this.viewport.numRows; row++) {
          for (int col = 0; col < this.viewport.numCols; col++) {
             Point worldPoint = this.viewport.viewportToWorld(col, row);
@@ -43,7 +43,7 @@ final class WorldView
       }
    }
 
-   public void drawEntities() {
+   private void drawEntities() {
       for (Entity entity : this.world.entities) {
          Point pos = entity.position;
 

@@ -10,8 +10,8 @@ import processing.core.PApplet;
 
 final class Functions {
 
-    public static final int COLOR_MASK = 0xffffff;
-    public static final int KEYED_IMAGE_MIN = 5;
+    private static final int COLOR_MASK = 0xffffff;
+
 
     // UNMOVED
 

@@ -5,56 +5,54 @@ import java.util.*;
 final class WorldModel {
     public int numRows;
     public int numCols;
-    public Background background[][];
-    public Entity occupancy[][];
     public Set<Entity> entities;
 
-    public static final int ORE_REACH = 1;
+    private Background background[][];
+    private Entity occupancy[][];
 
+    private static final int ORE_REACH = 1;
+    private static final int PROPERTY_KEY = 0;
 
+    private static final String BGND_KEY = "background";
+    private static final int BGND_NUM_PROPERTIES = 4;
+    private static final int BGND_ID = 1;
+    private static final int BGND_COL = 2;
+    private static final int BGND_ROW = 3;
 
-    public static final int PROPERTY_KEY = 0;
+    private static final String MINER_KEY = "miner";
+    private static final int MINER_NUM_PROPERTIES = 7;
+    private static final int MINER_ID = 1;
+    private static final int MINER_COL = 2;
+    private static final int MINER_ROW = 3;
+    private static final int MINER_LIMIT = 4;
+    private static final int MINER_ACTION_PERIOD = 5;
+    private static final int MINER_ANIMATION_PERIOD = 6;
 
-    public static final String BGND_KEY = "background";
-    public static final int BGND_NUM_PROPERTIES = 4;
-    public static final int BGND_ID = 1;
-    public static final int BGND_COL = 2;
-    public static final int BGND_ROW = 3;
+    private static final String OBSTACLE_KEY = "obstacle";
+    private static final int OBSTACLE_NUM_PROPERTIES = 4;
+    private static final int OBSTACLE_ID = 1;
+    private static final int OBSTACLE_COL = 2;
+    private static final int OBSTACLE_ROW = 3;
 
-    public static final String MINER_KEY = "miner";
-    public static final int MINER_NUM_PROPERTIES = 7;
-    public static final int MINER_ID = 1;
-    public static final int MINER_COL = 2;
-    public static final int MINER_ROW = 3;
-    public static final int MINER_LIMIT = 4;
-    public static final int MINER_ACTION_PERIOD = 5;
-    public static final int MINER_ANIMATION_PERIOD = 6;
+    private static final String ORE_KEY = "ore";
+    private static final int ORE_NUM_PROPERTIES = 5;
+    private static final int ORE_ID = 1;
+    private static final int ORE_COL = 2;
+    private static final int ORE_ROW = 3;
+    private static final int ORE_ACTION_PERIOD = 4;
 
-    public static final String OBSTACLE_KEY = "obstacle";
-    public static final int OBSTACLE_NUM_PROPERTIES = 4;
-    public static final int OBSTACLE_ID = 1;
-    public static final int OBSTACLE_COL = 2;
-    public static final int OBSTACLE_ROW = 3;
+    private static final String SMITH_KEY = "blacksmith";
+    private static final int SMITH_NUM_PROPERTIES = 4;
+    private static final int SMITH_ID = 1;
+    private static final int SMITH_COL = 2;
+    private static final int SMITH_ROW = 3;
 
-    public static final String ORE_KEY = "ore";
-    public static final int ORE_NUM_PROPERTIES = 5;
-    public static final int ORE_ID = 1;
-    public static final int ORE_COL = 2;
-    public static final int ORE_ROW = 3;
-    public static final int ORE_ACTION_PERIOD = 4;
-
-    public static final String SMITH_KEY = "blacksmith";
-    public static final int SMITH_NUM_PROPERTIES = 4;
-    public static final int SMITH_ID = 1;
-    public static final int SMITH_COL = 2;
-    public static final int SMITH_ROW = 3;
-
-    public static final String VEIN_KEY = "vein";
-    public static final int VEIN_NUM_PROPERTIES = 5;
-    public static final int VEIN_ID = 1;
-    public static final int VEIN_COL = 2;
-    public static final int VEIN_ROW = 3;
-    public static final int VEIN_ACTION_PERIOD = 4;
+    private static final String VEIN_KEY = "vein";
+    private static final int VEIN_NUM_PROPERTIES = 5;
+    private static final int VEIN_ID = 1;
+    private static final int VEIN_COL = 2;
+    private static final int VEIN_ROW = 3;
+    private static final int VEIN_ACTION_PERIOD = 4;
 
     public WorldModel(int numRows, int numCols, Background defaultBackground) {
         this.numRows = numRows;
@@ -84,7 +82,7 @@ final class WorldModel {
         removeEntityAt(entity.position);
     }
 
-    public void removeEntityAt(Point pos) {
+    private void removeEntityAt(Point pos) {
         if (withinBounds(pos)
                 && getOccupancyCell(pos) != null) {
             Entity entity = getOccupancyCell(pos);
@@ -97,16 +95,16 @@ final class WorldModel {
         }
     }
 
-    public boolean withinBounds(Point pos) {
+    private boolean withinBounds(Point pos) {
         return pos.y >= 0 && pos.y < this.numRows &&
                 pos.x >= 0 && pos.x < this.numCols;
     }
 
-    public Entity getOccupancyCell(Point pos) {
+    private Entity getOccupancyCell(Point pos) {
         return this.occupancy[pos.y][pos.x];
     }
 
-    public void setOccupancyCell(Point pos, Entity entity) {
+    private void setOccupancyCell(Point pos, Entity entity) {
         this.occupancy[pos.y][pos.x] = entity;
     }
 
@@ -193,8 +191,8 @@ final class WorldModel {
     }
 
     // puts each entity on the map
-    public boolean processLine(String line, WorldModel world,
-                               ImageStore imageStore) {
+    private boolean processLine(String line, WorldModel world,
+                                ImageStore imageStore) {
         String[] properties = line.split("\\s");
         if (properties.length > 0) {
             switch (properties[PROPERTY_KEY]) {
@@ -216,8 +214,8 @@ final class WorldModel {
         return false;
     }
 
-    public boolean parseBackground(String[] properties,
-                                   WorldModel world, ImageStore imageStore) {
+    private boolean parseBackground(String[] properties,
+                                    WorldModel world, ImageStore imageStore) {
         if (properties.length == BGND_NUM_PROPERTIES) {
             Point pt = new Point(Integer.parseInt(properties[BGND_COL]),
                     Integer.parseInt(properties[BGND_ROW]));
@@ -228,8 +226,8 @@ final class WorldModel {
         return properties.length == BGND_NUM_PROPERTIES;
     }
 
-    public boolean parseMiner(String[] properties, WorldModel world,
-                              ImageStore imageStore) {
+    private boolean parseMiner(String[] properties, WorldModel world,
+                               ImageStore imageStore) {
         if (properties.length == MINER_NUM_PROPERTIES) {
             Point pt = new Point(Integer.parseInt(properties[MINER_COL]),
                     Integer.parseInt(properties[MINER_ROW]));
@@ -245,8 +243,8 @@ final class WorldModel {
         return properties.length == MINER_NUM_PROPERTIES;
     }
 
-    public boolean parseObstacle(String[] properties, WorldModel world,
-                                 ImageStore imageStore) {
+    private boolean parseObstacle(String[] properties, WorldModel world,
+                                  ImageStore imageStore) {
         if (properties.length == OBSTACLE_NUM_PROPERTIES) {
             Point pt = new Point(
                     Integer.parseInt(properties[OBSTACLE_COL]),
@@ -259,8 +257,8 @@ final class WorldModel {
         return properties.length == OBSTACLE_NUM_PROPERTIES;
     }
 
-    public boolean parseOre(String[] properties, WorldModel world,
-                            ImageStore imageStore) {
+    private boolean parseOre(String[] properties, WorldModel world,
+                             ImageStore imageStore) {
         if (properties.length == ORE_NUM_PROPERTIES) {
             Point pt = new Point(Integer.parseInt(properties[ORE_COL]),
                     Integer.parseInt(properties[ORE_ROW]));
@@ -273,8 +271,8 @@ final class WorldModel {
         return properties.length == ORE_NUM_PROPERTIES;
     }
 
-    public boolean parseSmith(String[] properties, WorldModel world,
-                              ImageStore imageStore) {
+    private boolean parseSmith(String[] properties, WorldModel world,
+                               ImageStore imageStore) {
         if (properties.length == SMITH_NUM_PROPERTIES) {
             Point pt = new Point(Integer.parseInt(properties[SMITH_COL]),
                     Integer.parseInt(properties[SMITH_ROW]));
@@ -286,8 +284,8 @@ final class WorldModel {
         return properties.length == SMITH_NUM_PROPERTIES;
     }
 
-    public boolean parseVein(String[] properties, WorldModel world,
-                             ImageStore imageStore) {
+    private boolean parseVein(String[] properties, WorldModel world,
+                              ImageStore imageStore) {
         if (properties.length == VEIN_NUM_PROPERTIES) {
             Point pt = new Point(Integer.parseInt(properties[VEIN_COL]),
                     Integer.parseInt(properties[VEIN_ROW]));
@@ -301,7 +299,7 @@ final class WorldModel {
         return properties.length == VEIN_NUM_PROPERTIES;
     }
 
-    public void tryAddEntity(WorldModel world, Entity entity) {
+    private void tryAddEntity(WorldModel world, Entity entity) {
         if (isOccupied(entity.position)) {
             // arguably the wrong type of exception, but we are not
             // defining our own exceptions yet
@@ -312,13 +310,13 @@ final class WorldModel {
     }
 
 
-    public void setBackground(Point pos, Background background) {
+    private void setBackground(Point pos, Background background) {
         if (withinBounds(pos)) {
             setBackgroundCell(pos, background);
         }
     }
 
-    public void setBackgroundCell(Point pos, Background background) {
+    private void setBackgroundCell(Point pos, Background background) {
         this.background[pos.y][pos.x] = background;
     }
 
@@ -331,7 +329,7 @@ final class WorldModel {
         }
     }
 
-    public Background getBackgroundCell(Point pos) {
+    private Background getBackgroundCell(Point pos) {
         return this.background[pos.y][pos.x];
     }
 

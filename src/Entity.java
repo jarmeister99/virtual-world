@@ -7,14 +7,15 @@ import processing.core.PImage;
 final class Entity {
 
     public EntityKind kind;
-    public String id;
     public Point position;
     public List<PImage> images;
     public int imageIndex;
-    public int resourceLimit;
-    public int resourceCount;
     public int actionPeriod;
-    public int animationPeriod;
+
+    private String id;
+    private int resourceLimit;
+    private int resourceCount;
+    private int animationPeriod;
 
     private static final String BLOB_KEY = "blob";
     private static final String BLOB_ID_SUFFIX = " -- blob";
@@ -33,7 +34,7 @@ final class Entity {
     private static final String ORE_KEY = "ore";
 
 
-    public static final Random rand = new Random();
+    private static final Random rand = new Random();
 
     public Entity(EntityKind kind, String id, Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
@@ -175,7 +176,7 @@ final class Entity {
     // MOVE METHODS
 
 
-    public boolean moveToOreBlob(WorldModel world, Entity target, EventScheduler scheduler) {
+    private boolean moveToOreBlob(WorldModel world, Entity target, EventScheduler scheduler) {
         if (Point.adjacent(this.position, target.position)) {
             world.removeEntity(target);
             scheduler.unscheduleAllEvents(target);
@@ -195,8 +196,8 @@ final class Entity {
         }
     }
 
-    public boolean moveToFull(WorldModel world,
-                              Entity target, EventScheduler scheduler) {
+    private boolean moveToFull(WorldModel world,
+                               Entity target, EventScheduler scheduler) {
         if (Point.adjacent(this.position, target.position)) {
             return true;
         } else {
@@ -214,8 +215,8 @@ final class Entity {
         }
     }
 
-    public boolean moveToNotFull(WorldModel world,
-                                 Entity target, EventScheduler scheduler) {
+    private boolean moveToNotFull(WorldModel world,
+                                  Entity target, EventScheduler scheduler) {
 
         // if the miner is adjacent to the target
         if (Point.adjacent(this.position, target.position)) {
@@ -253,8 +254,8 @@ final class Entity {
 
     // TRANSFORM METHODS
 
-    public void transformFull(WorldModel world,
-                              EventScheduler scheduler, ImageStore imageStore) {
+    private void transformFull(WorldModel world,
+                               EventScheduler scheduler, ImageStore imageStore) {
         // the active miner becomes an empty miner
         Entity miner = createMinerNotFull(this.id, this.resourceLimit,
                 this.position, this.actionPeriod, this.animationPeriod,
@@ -267,8 +268,8 @@ final class Entity {
         scheduler.scheduleActions(miner, world, imageStore);
     }
 
-    public boolean transformNotFull(WorldModel world,
-                                    EventScheduler scheduler, ImageStore imageStore) {
+    private boolean transformNotFull(WorldModel world,
+                                     EventScheduler scheduler, ImageStore imageStore) {
         if (this.resourceCount >= this.resourceLimit) {
             // the active miner becomes a full miner
             Entity miner = createMinerFull(this.id, this.resourceLimit,
@@ -350,8 +351,8 @@ final class Entity {
 
     // NEXT POSITION METHODS
 
-    public Point nextPositionOreBlob(WorldModel world,
-                                     Point destPos) {
+    private Point nextPositionOreBlob(WorldModel world,
+                                      Point destPos) {
         int horiz = Integer.signum(destPos.x - this.position.x);
         Point newPos = new Point(this.position.x + horiz,
                 this.position.y);
@@ -374,7 +375,7 @@ final class Entity {
     }
 
     // find the next point a miner should visit (finding a path)
-    public Point nextPositionMiner(WorldModel world, Point destPos) {
+    private Point nextPositionMiner(WorldModel world, Point destPos) {
         // 1 if the destination is on the right of the entity
         // -1 if the destination is on the left of the entity
         // 0 if the destination is on the same column as entity

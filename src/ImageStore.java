@@ -4,12 +4,13 @@ import processing.core.PApplet;
 import processing.core.PImage;
 
 final class ImageStore {
-    public Map<String, List<PImage>> images;
-    public List<PImage> defaultImages;
+    private Map<String, List<PImage>> images;
+    private List<PImage> defaultImages;
 
     private static final int KEYED_RED_IDX = 2;
     private static final int KEYED_GREEN_IDX = 3;
     private static final int KEYED_BLUE_IDX = 4;
+    private static final int KEYED_IMAGE_MIN = 5;
 
     public ImageStore(PImage defaultImage) {
         this.images = new HashMap<>();
@@ -35,7 +36,7 @@ final class ImageStore {
         }
     }
 
-    public void processImageLine(Map<String, List<PImage>> images, String line, PApplet screen) {
+    private void processImageLine(Map<String, List<PImage>> images, String line, PApplet screen) {
         String[] attrs = line.split("\\s");
         if (attrs.length >= 2) {
             String key = attrs[0];
@@ -44,7 +45,7 @@ final class ImageStore {
                 List<PImage> imgs = getImages(images, key);
                 imgs.add(img);
 
-                if (attrs.length >= Functions.KEYED_IMAGE_MIN) {
+                if (attrs.length >= KEYED_IMAGE_MIN) {
                     int r = Integer.parseInt(attrs[KEYED_RED_IDX]);
                     int g = Integer.parseInt(attrs[KEYED_GREEN_IDX]);
                     int b = Integer.parseInt(attrs[KEYED_BLUE_IDX]);
@@ -54,7 +55,7 @@ final class ImageStore {
         }
     }
 
-    public List<PImage> getImages(Map<String, List<PImage>> images, String key) {
+    private List<PImage> getImages(Map<String, List<PImage>> images, String key) {
         List<PImage> imgs = images.get(key);
         if (imgs == null) {
             imgs = new LinkedList<>();

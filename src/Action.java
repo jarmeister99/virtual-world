@@ -1,9 +1,9 @@
 final class Action {
-    public ActionKind kind;
-    public Entity entity;
-    public WorldModel world;
-    public ImageStore imageStore;
-    public int repeatCount;
+    private ActionKind kind;
+    private Entity entity;
+    private WorldModel world;
+    private ImageStore imageStore;
+    private int repeatCount;
 
     public Action(ActionKind kind, Entity entity, WorldModel world,
                   ImageStore imageStore, int repeatCount) {
@@ -26,7 +26,7 @@ final class Action {
         }
     }
 
-    public void executeAnimationAction(EventScheduler scheduler) {
+    private void executeAnimationAction(EventScheduler scheduler) {
         this.entity.nextImage();
 
         if (this.repeatCount != 1) {
@@ -36,7 +36,7 @@ final class Action {
         }
     }
 
-    public void executeActivityAction(EventScheduler scheduler) {
+    private void executeActivityAction(EventScheduler scheduler) {
         switch (this.entity.kind) {
             case MINER_FULL:
                 this.entity.executeMinerFullActivity(this.world,

@@ -3,7 +3,7 @@ import processing.core.PImage;
 
 final class Background
 {
-   public String id;
+   private String id;
    public List<PImage> images;
    public int imageIndex;
 
