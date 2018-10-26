@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class Blacksmith implements Entity {
-    public EntityKind kind;
+    public String kind;
     public Point position;
     public List<PImage> images;
     public int imageIndex;
@@ -15,10 +15,10 @@ public class Blacksmith implements Entity {
     private int resourceCount;
     private int animationPeriod;
 
-    public Blacksmith(EntityKind kind, String id, Point position,
+    public Blacksmith(String id, Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
                   int actionPeriod, int animationPeriod) {
-        this.kind = kind;
+        this.kind = "BLACKSMITH";
         this.id = id;
         this.position = position;
         this.images = images;
@@ -31,6 +31,31 @@ public class Blacksmith implements Entity {
 
     public void nextImage() {
         this.imageIndex = (this.imageIndex + 1) % this.images.size();
+    }
+
+    @Override
+    public Point getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public void setPosition(Point point) {
+        this.position = point;
+    }
+
+    @Override
+    public String getKind() {
+        return this.kind;
+    }
+
+    @Override
+    public List<PImage> getImages(){
+        return this.images;
+    }
+
+    @Override
+    public int getImageIndex(){
+        return this.imageIndex;
     }
 
 }

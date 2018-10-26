@@ -3,8 +3,8 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class Quake implements Entity {
-    public EntityKind kind;
+public class Quake implements Entity, Animated, Active {
+    public String kind;
     public Point position;
     public List<PImage> images;
     public int imageIndex;
@@ -17,10 +17,10 @@ public class Quake implements Entity {
 
 
 
-    public Quake(EntityKind kind, String id, Point position,
+    public Quake(String id, Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
                   int actionPeriod, int animationPeriod) {
-        this.kind = kind;
+        this.kind = "QUAKE";
         this.id = id;
         this.position = position;
         this.images = images;
@@ -32,17 +32,12 @@ public class Quake implements Entity {
     }
 
     public int getAnimationPeriod() {
-        switch (this.kind) {
-            case MINER_FULL:
-            case MINER_NOT_FULL:
-            case ORE_BLOB:
-            case QUAKE:
-                return this.animationPeriod;
-            default:
-                throw new UnsupportedOperationException(
-                        String.format("getAnimationPeriod not supported for %s",
-                                this.kind));
-        }
+        return this.animationPeriod;
+    }
+
+    @Override
+    public int getRepeatCount() {
+        return 0;
     }
 
     public void nextImage() {
@@ -55,4 +50,38 @@ public class Quake implements Entity {
         world.removeEntity(this);
     }
 
+    @Override
+    public Point getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public void setPosition(Point point) {
+        this.position = point;
+    }
+
+    @Override
+    public String getKind() {
+        return this.kind;
+    }
+
+    @Override
+    public int getActionPeriod() {
+        return this.actionPeriod;
+    }
+
+    @Override
+    public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
+        executeQuakeActivity(world, imageStore, scheduler);
+    }
+
+    @Override
+    public List<PImage> getImages(){
+        return this.images;
+    }
+
+    @Override
+    public int getImageIndex(){
+        return this.imageIndex;
+    }
 }

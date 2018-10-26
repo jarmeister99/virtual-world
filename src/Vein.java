@@ -3,8 +3,8 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class Vein implements Entity {
-    public EntityKind kind;
+public class Vein implements Entity, Active {
+    public String kind;
     public Point position;
     public List<PImage> images;
     public int imageIndex;
@@ -15,10 +15,10 @@ public class Vein implements Entity {
     private int resourceCount;
     private int animationPeriod;
 
-    public Vein(EntityKind kind, String id, Point position,
+    public Vein(String id, Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
                   int actionPeriod, int animationPeriod) {
-        this.kind = kind;
+        this.kind = "VEIN";
         this.id = id;
         this.position = position;
         this.images = images;
@@ -38,7 +38,7 @@ public class Vein implements Entity {
         Optional<Point> openPt = world.findOpenAround(this.position);
 
         if (openPt.isPresent()) {
-            Entity ore = createOre(ORE_ID_PREFIX + this.id,
+            Entity ore = Entity.createOre(ORE_ID_PREFIX + this.id,
                     openPt.get(), ORE_CORRUPT_MIN +
                             rand.nextInt(ORE_CORRUPT_MAX - ORE_CORRUPT_MIN),
                     imageStore.getImageList(ORE_KEY));
@@ -47,8 +47,42 @@ public class Vein implements Entity {
         }
 
         scheduler.scheduleEvent(this,
-                createActivityAction(world, imageStore),
+                Entity.createActivityAction(world, imageStore, this),
                 this.actionPeriod);
     }
 
+    @Override
+    public Point getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public void setPosition(Point point) {
+        this.position = point;
+    }
+
+    @Override
+    public String getKind() {
+        return this.kind;
+    }
+
+    @Override
+    public int getActionPeriod() {
+        return this.actionPeriod;
+    }
+
+    @Override
+    public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
+        executeVeinActivity(world, imageStore, scheduler);
+    }
+
+    @Override
+    public List<PImage> getImages(){
+        return this.images;
+    }
+
+    @Override
+    public int getImageIndex(){
+        return this.imageIndex;
+    }
 }

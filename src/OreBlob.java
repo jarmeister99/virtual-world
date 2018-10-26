@@ -3,8 +3,8 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class OreBlob implements Entity {
-    public EntityKind kind;
+public class OreBlob implements Entity, Animated, Active {
+    public String kind;
     public Point position;
     public List<PImage> images;
     public int imageIndex;
@@ -15,10 +15,10 @@ public class OreBlob implements Entity {
     private int resourceCount;
     private int animationPeriod;
 
-    public OreBlob(EntityKind kind, String id, Point position,
+    public OreBlob(String id, Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
                   int actionPeriod, int animationPeriod) {
-        this.kind = kind;
+        this.kind = "OREBLOB";
         this.id = id;
         this.position = position;
         this.images = images;
@@ -30,17 +30,12 @@ public class OreBlob implements Entity {
     }
 
     public int getAnimationPeriod() {
-        switch (this.kind) {
-            case MINER_FULL:
-            case MINER_NOT_FULL:
-            case ORE_BLOB:
-            case QUAKE:
-                return this.animationPeriod;
-            default:
-                throw new UnsupportedOperationException(
-                        String.format("getAnimationPeriod not supported for %s",
-                                this.kind));
-        }
+        return this.animationPeriod;
+    }
+
+    @Override
+    public int getRepeatCount() {
+        return 0;
     }
 
     public void nextImage() {
@@ -49,14 +44,14 @@ public class OreBlob implements Entity {
 
     public void executeOreBlobActivity(WorldModel world,
                                        ImageStore imageStore, EventScheduler scheduler) {
-        Optional<Entity> blobTarget = world.findNearest(this.position, EntityKind.VEIN);
+        Optional<Entity> blobTarget = world.findNearest(this.position, "VEIN");
         long nextPeriod = this.actionPeriod;
 
         if (blobTarget.isPresent()) {
-            Point tgtPos = blobTarget.get().position;
+            Point tgtPos = blobTarget.get().getPosition();
 
             if (moveToOreBlob(world, blobTarget.get(), scheduler)) {
-                Entity quake = createQuake(tgtPos, imageStore.getImageList(QUAKE_KEY));
+                Entity quake = Entity.createQuake(tgtPos, imageStore.getImageList(QUAKE_KEY));
 
                 world.addEntity(quake);
                 nextPeriod += this.actionPeriod;
@@ -64,17 +59,17 @@ public class OreBlob implements Entity {
             }
         }
 
-        scheduler.scheduleEvent(this, createActivityAction(world, imageStore), nextPeriod);
+        scheduler.scheduleEvent(this, Entity.createActivityAction(world, imageStore, this), nextPeriod);
     }
 
 
     private boolean moveToOreBlob(WorldModel world, Entity target, EventScheduler scheduler) {
-        if (Point.adjacent(this.position, target.position)) {
+        if (Point.adjacent(this.position, target.getPosition())) {
             world.removeEntity(target);
             scheduler.unscheduleAllEvents(target);
             return true;
         } else {
-            Point nextPos = nextPositionOreBlob(world, target.position);
+            Point nextPos = nextPositionOreBlob(world, target.getPosition());
 
             if (!this.position.equals(nextPos)) {
                 Optional<Entity> occupant = world.getOccupant(nextPos);
@@ -97,13 +92,13 @@ public class OreBlob implements Entity {
         Optional<Entity> occupant = world.getOccupant(newPos);
 
         if (horiz == 0 ||
-                (occupant.isPresent() && !(occupant.get().kind == EntityKind.ORE))) {
+                (occupant.isPresent() && !(occupant.get().getKind() == "ORE"))) {
             int vert = Integer.signum(destPos.y - this.position.y);
             newPos = new Point(this.position.x, this.position.y + vert);
             occupant = world.getOccupant(newPos);
 
             if (vert == 0 ||
-                    (occupant.isPresent() && !(occupant.get().kind == EntityKind.ORE))) {
+                    (occupant.isPresent() && !(occupant.get().getKind() == "ORE"))) {
                 newPos = this.position;
             }
         }
@@ -111,4 +106,38 @@ public class OreBlob implements Entity {
         return newPos;
     }
 
+    @Override
+    public Point getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public void setPosition(Point point) {
+        this.position = point;
+    }
+
+    @Override
+    public String getKind() {
+        return this.kind;
+    }
+
+    @Override
+    public int getActionPeriod() {
+        return this.actionPeriod;
+    }
+
+    @Override
+    public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
+        executeOreBlobActivity(world, imageStore, scheduler);
+    }
+
+    @Override
+    public List<PImage> getImages(){
+        return this.images;
+    }
+
+    @Override
+    public int getImageIndex(){
+        return this.imageIndex;
+    }
 }
