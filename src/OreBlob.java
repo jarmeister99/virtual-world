@@ -3,55 +3,50 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class OreBlob implements Entity, Animated, Active {
-    public String kind;
-    public Point position;
-    public List<PImage> images;
-    public int imageIndex;
-    public int actionPeriod;
+public class OreBlob extends Entity implements Animated, Active {
 
-    private String id;
-    private int resourceLimit;
-    private int resourceCount;
+    public static final String BLOB_KEY = "blob";
+    public static final int BLOB_PERIOD_SCALE = 4;
+    public static final int BLOB_ANIMATION_MIN = 50;
+    public static final int BLOB_ANIMATION_MAX = 150;
+
+    private int actionPeriod;
     private int animationPeriod;
 
-    public OreBlob(String id, Point position,
-                  List<PImage> images, int resourceLimit, int resourceCount,
-                  int actionPeriod, int animationPeriod) {
-        this.kind = "OREBLOB";
-        this.id = id;
-        this.position = position;
-        this.images = images;
-        this.imageIndex = 0;
-        this.resourceLimit = resourceLimit;
-        this.resourceCount = resourceCount;
+    public OreBlob(Point position, List<PImage> images, int actionPeriod, int animationPeriod) {
+        super(position, "OREBLOB", images, 0);
         this.actionPeriod = actionPeriod;
         this.animationPeriod = animationPeriod;
     }
 
+    // ANIMATED
+
     public int getAnimationPeriod() {
         return this.animationPeriod;
     }
-
-    @Override
     public int getRepeatCount() {
         return 0;
     }
 
-    public void nextImage() {
-        this.imageIndex = (this.imageIndex + 1) % this.images.size();
+    // ACTIVE
+
+    public int getActionPeriod() {
+        return this.actionPeriod;
+    }
+    public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
+        executeOreBlobActivity(world, imageStore, scheduler);
     }
 
-    public void executeOreBlobActivity(WorldModel world,
-                                       ImageStore imageStore, EventScheduler scheduler) {
-        Optional<Entity> blobTarget = world.findNearest(this.position, "VEIN");
+    private void executeOreBlobActivity(WorldModel world,
+                                        ImageStore imageStore, EventScheduler scheduler) {
+        Optional<Entity> blobTarget = world.findNearest(getPosition(), "VEIN");
         long nextPeriod = this.actionPeriod;
 
         if (blobTarget.isPresent()) {
             Point tgtPos = blobTarget.get().getPosition();
 
             if (moveToOreBlob(world, blobTarget.get(), scheduler)) {
-                Entity quake = Entity.createQuake(tgtPos, imageStore.getImageList(QUAKE_KEY));
+                Entity quake = Entity.createQuake(tgtPos, imageStore.getImageList(Quake.QUAKE_KEY));
 
                 world.addEntity(quake);
                 nextPeriod += this.actionPeriod;
@@ -64,80 +59,42 @@ public class OreBlob implements Entity, Animated, Active {
 
 
     private boolean moveToOreBlob(WorldModel world, Entity target, EventScheduler scheduler) {
-        if (Point.adjacent(this.position, target.getPosition())) {
+        if (Point.adjacent(getPosition(), target.getPosition())) {
             world.removeEntity(target);
             scheduler.unscheduleAllEvents(target);
             return true;
         } else {
             Point nextPos = nextPositionOreBlob(world, target.getPosition());
 
-            if (!this.position.equals(nextPos)) {
-                Optional<Entity> occupant = world.getOccupant(nextPos);
-                if (occupant.isPresent()) {
-                    scheduler.unscheduleAllEvents(occupant.get());
-                }
-
-                world.moveEntity(this, nextPos);
-            }
+            move(nextPos, world, scheduler);
             return false;
         }
     }
 
     private Point nextPositionOreBlob(WorldModel world,
                                       Point destPos) {
-        int horiz = Integer.signum(destPos.x - this.position.x);
-        Point newPos = new Point(this.position.x + horiz,
-                this.position.y);
+        int horiz = Integer.signum(destPos.x - getPosition().x);
+        Point newPos = new Point(getPosition().x + horiz,
+                getPosition().y);
 
         Optional<Entity> occupant = world.getOccupant(newPos);
 
         if (horiz == 0 ||
                 (occupant.isPresent() && !(occupant.get().getKind() == "ORE"))) {
-            int vert = Integer.signum(destPos.y - this.position.y);
-            newPos = new Point(this.position.x, this.position.y + vert);
+            int vert = Integer.signum(destPos.y - getPosition().y);
+            newPos = new Point(getPosition().x, getPosition().y + vert);
             occupant = world.getOccupant(newPos);
 
             if (vert == 0 ||
                     (occupant.isPresent() && !(occupant.get().getKind() == "ORE"))) {
-                newPos = this.position;
+                newPos = getPosition();
             }
         }
 
         return newPos;
     }
-
-    @Override
-    public Point getPosition() {
-        return this.position;
+    public <R> R accept(EntityVisitor<R> visitor){
+        return visitor.visit(this);
     }
 
-    @Override
-    public void setPosition(Point point) {
-        this.position = point;
-    }
-
-    @Override
-    public String getKind() {
-        return this.kind;
-    }
-
-    @Override
-    public int getActionPeriod() {
-        return this.actionPeriod;
-    }
-
-    @Override
-    public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
-        executeOreBlobActivity(world, imageStore, scheduler);
-    }
-
-    @Override
-    public List<PImage> getImages(){
-        return this.images;
-    }
-
-    @Override
-    public int getImageIndex(){
-        return this.imageIndex;
-    }
 }

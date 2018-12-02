@@ -33,7 +33,7 @@ public final class VirtualWorld
    private static final double FASTER_SCALE = 0.25;
    private static final double FASTEST_SCALE = 0.10;
 
-   private static double timeScale = 1.0 / 10;
+   private static double timeScale = 1.0 / 2;
 
    private ImageStore imageStore;
    private WorldModel world;

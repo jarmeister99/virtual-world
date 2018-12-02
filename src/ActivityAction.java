@@ -1,4 +1,4 @@
-public class ActivityAction implements Action{
+public class ActivityAction implements Action {
     private Entity entity;
     private WorldModel world;
     private ImageStore imageStore;
@@ -20,10 +20,9 @@ public class ActivityAction implements Action{
 
     private void executeActivityAction(EventScheduler scheduler) {
         // the entity that belongs to this action executes its activity
-        if (this.entity instanceof Active) {
-            Active activeEntity = (Active) this.entity;
-            activeEntity.executeActivity(world, imageStore, scheduler);
-        }
+        Active activeEntity = (Active) this.entity;
+        activeEntity.executeActivity(world, imageStore, scheduler);
+
     }
 }
 

@@ -3,85 +3,49 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class Quake implements Entity, Animated, Active {
-    public String kind;
-    public Point position;
-    public List<PImage> images;
-    public int imageIndex;
-    public int actionPeriod;
+public class Quake extends Entity implements Animated, Active {
 
-    private String id;
-    private int resourceLimit;
-    private int resourceCount;
+    public static final String QUAKE_KEY = "quake";
+    public static final int QUAKE_ACTION_PERIOD = 1100;
+    public static final int QUAKE_ANIMATION_PERIOD = 100;
+
+    private int actionPeriod;
     private int animationPeriod;
 
 
 
-    public Quake(String id, Point position,
-                  List<PImage> images, int resourceLimit, int resourceCount,
-                  int actionPeriod, int animationPeriod) {
-        this.kind = "QUAKE";
-        this.id = id;
-        this.position = position;
-        this.images = images;
-        this.imageIndex = 0;
-        this.resourceLimit = resourceLimit;
-        this.resourceCount = resourceCount;
+    public Quake(Point position, List<PImage> images, int actionPeriod, int animationPeriod) {
+        super(position, "QUAKE", images, 0);
         this.actionPeriod = actionPeriod;
         this.animationPeriod = animationPeriod;
     }
 
+    // ANIMATED
+
     public int getAnimationPeriod() {
         return this.animationPeriod;
     }
-
-    @Override
     public int getRepeatCount() {
         return 0;
     }
 
-    public void nextImage() {
-        this.imageIndex = (this.imageIndex + 1) % this.images.size();
-    }
+    // ACTIVE
 
-    public void executeQuakeActivity(WorldModel world,
-                                     ImageStore imageStore, EventScheduler scheduler) {
-        scheduler.unscheduleAllEvents(this);
-        world.removeEntity(this);
-    }
-
-    @Override
-    public Point getPosition() {
-        return this.position;
-    }
-
-    @Override
-    public void setPosition(Point point) {
-        this.position = point;
-    }
-
-    @Override
-    public String getKind() {
-        return this.kind;
-    }
-
-    @Override
     public int getActionPeriod() {
         return this.actionPeriod;
     }
-
-    @Override
     public void executeActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
         executeQuakeActivity(world, imageStore, scheduler);
     }
 
-    @Override
-    public List<PImage> getImages(){
-        return this.images;
+    private void executeQuakeActivity(WorldModel world,
+                                      ImageStore imageStore, EventScheduler scheduler) {
+        scheduler.unscheduleAllEvents(this);
+        world.removeEntity(this);
+    }
+    public <R> R accept(EntityVisitor<R> visitor){
+        return visitor.visit(this);
     }
 
-    @Override
-    public int getImageIndex(){
-        return this.imageIndex;
-    }
+
 }

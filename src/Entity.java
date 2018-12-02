@@ -4,78 +4,49 @@ import java.util.Random;
 
 import processing.core.PImage;
 
-interface Entity {
+abstract class Entity {
 
-    public static final int ORE_REACH = 1;
     public static final int PROPERTY_KEY = 0;
 
-    public static final String MINER_KEY = "miner";
-    public static final int MINER_NUM_PROPERTIES = 7;
-    public static final int MINER_ID = 1;
-    public static final int MINER_COL = 2;
-    public static final int MINER_ROW = 3;
-    public static final int MINER_LIMIT = 4;
-    public static final int MINER_ACTION_PERIOD = 5;
-    public static final int MINER_ANIMATION_PERIOD = 6;
-
-    public static final String OBSTACLE_KEY = "obstacle";
-    public static final int OBSTACLE_NUM_PROPERTIES = 4;
-    public static final int OBSTACLE_ID = 1;
-    public static final int OBSTACLE_COL = 2;
-    public static final int OBSTACLE_ROW = 3;
-
-    public static final String BLOB_KEY = "blob";
-    public static final String BLOB_ID_SUFFIX = " -- blob";
-    public static final int BLOB_PERIOD_SCALE = 4;
-    public static final int BLOB_ANIMATION_MIN = 50;
-    public static final int BLOB_ANIMATION_MAX = 150;
-
-    public static final String ORE_ID_PREFIX = "ore -- ";
-    public static final int ORE_CORRUPT_MIN = 20000;
-    public static final int ORE_CORRUPT_MAX = 30000;
-
-    public static final String ORE_KEY = "ore";
-    public static final int ORE_NUM_PROPERTIES = 5;
-    public static final int ORE_ID = 1;
-    public static final int ORE_COL = 2;
-    public static final int ORE_ROW = 3;
-    public static final int ORE_ACTION_PERIOD = 4;
-
-    public static final String SMITH_KEY = "blacksmith";
-    public static final int SMITH_NUM_PROPERTIES = 4;
-    public static final int SMITH_ID = 1;
-    public static final int SMITH_COL = 2;
-    public static final int SMITH_ROW = 3;
-
-    public static final String VEIN_KEY = "vein";
-    public static final int VEIN_NUM_PROPERTIES = 5;
-    public static final int VEIN_ID = 1;
-    public static final int VEIN_COL = 2;
-    public static final int VEIN_ROW = 3;
-    public static final int VEIN_ACTION_PERIOD = 4;
-
-    static final String QUAKE_KEY = "quake";
-    static final String QUAKE_ID = "quake";
-    static final int QUAKE_ACTION_PERIOD = 1100;
-    static final int QUAKE_ANIMATION_PERIOD = 100;
-
-
-
+    private Point position;
+    private String kind;
+    private List<PImage> images;
+    private int imageIndex;
 
     public static final Random rand = new Random();
 
+    public Entity(Point position, String kind, List<PImage> images, int imageIndex){
+        this.position = position;
+        this.kind = kind;
+        this.images = images;
+        this.imageIndex = imageIndex;
+    }
 
-    public Point getPosition();
+    public abstract <R> R accept(EntityVisitor<R> visitor);
 
-    public void setPosition(Point point);
+    public Point getPosition(){
+        return this.position;
+    }
 
-    public String getKind();
+    public void setPosition(Point point){
+        this.position = point;
+    }
 
-    public void nextImage();
+    public String getKind(){
+        return this.kind;
+    }
 
-    public List<PImage> getImages();
+    public void nextImage() {
+        this.imageIndex = (this.imageIndex + 1) % this.images.size();
+    }
 
-    public int getImageIndex();
+    public List<PImage> getImages(){
+        return this.images;
+    }
+
+    public int getImageIndex(){
+        return this.imageIndex;
+    }
 
     public static Action createAnimationAction(int repeatCount, Entity entity) {
         return new AnimationAction(entity, null, null, repeatCount);
@@ -106,53 +77,45 @@ interface Entity {
         }
     }
 
-    public static Entity createBlacksmith(String id, Point position,
-                                          List<PImage> images) {
-        return new Blacksmith(id, position, images,
-                0, 0, 0, 0);
+    public void move(Point nextPos, WorldModel world, EventScheduler scheduler){
+        if (!getPosition().equals(nextPos)) {
+            Optional<Entity> occupant = world.getOccupant(nextPos);
+            occupant.ifPresent(scheduler::unscheduleAllEvents);
+            world.moveEntity(this, nextPos);
+        }
     }
 
-    public static Entity createMinerFull(String id, int resourceLimit,
-                                         Point position, int actionPeriod, int animationPeriod,
-                                         List<PImage> images) {
-        return new MinerFull(id, position, images,
-                resourceLimit, resourceLimit, actionPeriod, animationPeriod);
+    public static Entity createBlacksmith(Point position, List<PImage> images) {
+        return new Blacksmith(position, images);
     }
 
-    public static Entity createMinerNotFull(String id, int resourceLimit,
-                                            Point position, int actionPeriod, int animationPeriod,
-                                            List<PImage> images) {
-        return new Miner(id, position, images,
+    public static Entity createMinerFull(int resourceLimit, Point position, int actionPeriod, int animationPeriod, List<PImage> images) {
+        return new MinerFull(position, images, resourceLimit, resourceLimit, actionPeriod, animationPeriod);
+    }
+
+    public static Entity createMinerNotFull(int resourceLimit, Point position, int actionPeriod, int animationPeriod, List<PImage> images) {
+        return new Miner(position, images,
                 resourceLimit, 0, actionPeriod, animationPeriod);
     }
 
-    public static Entity createObstacle(String id, Point position,
-                                        List<PImage> images) {
-        return new Obstacle(id, position, images,
-                0, 0, 0, 0);
+    public static Entity createObstacle(Point position, List<PImage> images) {
+        return new Obstacle(position, images);
     }
 
-    public static Entity createOre(String id, Point position, int actionPeriod,
-                                   List<PImage> images) {
-        return new Ore(id, position, images, 0, 0,
-                actionPeriod, 0);
+    public static Entity createOre(Point position, int actionPeriod, List<PImage> images) {
+        return new Ore(position, images, actionPeriod);
     }
 
-    public static Entity createOreBlob(String id, Point position,
-                                       int actionPeriod, int animationPeriod, List<PImage> images) {
-        return new OreBlob(id, position, images,
-                0, 0, actionPeriod, animationPeriod);
+    public static Entity createOreBlob(Point position, int actionPeriod, int animationPeriod, List<PImage> images) {
+        return new OreBlob(position, images, actionPeriod, animationPeriod);
     }
 
     public static Entity createQuake(Point position, List<PImage> images) {
-        return new Quake(QUAKE_ID, position, images,
-                0, 0, QUAKE_ACTION_PERIOD, QUAKE_ANIMATION_PERIOD);
+        return new Quake(position, images, Quake.QUAKE_ACTION_PERIOD, Quake.QUAKE_ANIMATION_PERIOD);
     }
 
-    public static Entity createVein(String id, Point position, int actionPeriod,
-                                    List<PImage> images) {
-        return new Vein(id, position, images, 0, 0,
-                actionPeriod, 0);
+    public static Entity createVein(Point position, int actionPeriod, List<PImage> images) {
+        return new Vein(position, images, actionPeriod);
     }
 
 }

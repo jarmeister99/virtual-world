@@ -104,10 +104,10 @@ final class WorldModel {
     public Optional<Point> findOpenAround(Point pos) {
 
         // for dy = -1, dy < 1, dy++
-        for (int dy = -Entity.ORE_REACH; dy <= Entity.ORE_REACH; dy++) {
+        for (int dy = -Miner.ORE_REACH; dy <= Miner.ORE_REACH; dy++) {
 
             // for dx = -1, dx < 1, dx++
-            for (int dx = -Entity.ORE_REACH; dx <= Entity.ORE_REACH; dx++) {
+            for (int dx = -Miner.ORE_REACH; dx <= Miner.ORE_REACH; dx++) {
 
                 // make a new point in the direction of <dy, dx>
                 // starts at 1 down 1 left, then 1 down 0 left, then 1 down 1 right
@@ -161,15 +161,15 @@ final class WorldModel {
             switch (properties[Entity.PROPERTY_KEY]) {
                 case BGND_KEY:
                     return parseBackground(properties, world, imageStore);
-                case Entity.MINER_KEY:
+                case Miner.MINER_KEY:
                     return parseMiner(properties, world, imageStore);
-                case Entity.OBSTACLE_KEY:
+                case Obstacle.OBSTACLE_KEY:
                     return parseObstacle(properties, world, imageStore);
-                case Entity.ORE_KEY:
+                case Ore.ORE_KEY:
                     return parseOre(properties, world, imageStore);
-                case Entity.SMITH_KEY:
+                case Blacksmith.SMITH_KEY:
                     return parseSmith(properties, world, imageStore);
-                case Entity.VEIN_KEY:
+                case Vein.VEIN_KEY:
                     return parseVein(properties, world, imageStore);
             }
         }
@@ -191,75 +191,69 @@ final class WorldModel {
 
     private boolean parseMiner(String[] properties, WorldModel world,
                                ImageStore imageStore) {
-        if (properties.length == Entity.MINER_NUM_PROPERTIES) {
-            Point pt = new Point(Integer.parseInt(properties[Entity.MINER_COL]),
-                    Integer.parseInt(properties[Entity.MINER_ROW]));
-            Entity entity = Entity.createMinerNotFull(properties[Entity.MINER_ID],
-                    Integer.parseInt(properties[Entity.MINER_LIMIT]),
+        if (properties.length == Miner.MINER_NUM_PROPERTIES) {
+            Point pt = new Point(Integer.parseInt(properties[Miner.MINER_COL]),
+                    Integer.parseInt(properties[Miner.MINER_ROW]));
+            Entity entity = Entity.createMinerNotFull(
+                    Integer.parseInt(properties[Miner.MINER_LIMIT]),
                     pt,
-                    Integer.parseInt(properties[Entity.MINER_ACTION_PERIOD]),
-                    Integer.parseInt(properties[Entity.MINER_ANIMATION_PERIOD]),
-                    imageStore.getImageList(Entity.MINER_KEY));
+                    Integer.parseInt(properties[Miner.MINER_ACTION_PERIOD]),
+                    Integer.parseInt(properties[Miner.MINER_ANIMATION_PERIOD]),
+                    imageStore.getImageList(Miner.MINER_KEY));
             tryAddEntity(world, entity);
         }
 
-        return properties.length == Entity.MINER_NUM_PROPERTIES;
+        return properties.length == Miner.MINER_NUM_PROPERTIES;
     }
 
     private boolean parseObstacle(String[] properties, WorldModel world,
                                   ImageStore imageStore) {
-        if (properties.length == Entity.OBSTACLE_NUM_PROPERTIES) {
+        if (properties.length == Obstacle.OBSTACLE_NUM_PROPERTIES) {
             Point pt = new Point(
-                    Integer.parseInt(properties[Entity.OBSTACLE_COL]),
-                    Integer.parseInt(properties[Entity.OBSTACLE_ROW]));
-            Entity entity = Entity.createObstacle(properties[Entity.OBSTACLE_ID],
-                    pt, imageStore.getImageList(Entity.OBSTACLE_KEY));
+                    Integer.parseInt(properties[Obstacle.OBSTACLE_COL]),
+                    Integer.parseInt(properties[Obstacle.OBSTACLE_ROW]));
+            Entity entity = Entity.createObstacle(pt, imageStore.getImageList(Obstacle.OBSTACLE_KEY));
             tryAddEntity(world, entity);
         }
 
-        return properties.length == Entity.OBSTACLE_NUM_PROPERTIES;
+        return properties.length == Obstacle.OBSTACLE_NUM_PROPERTIES;
     }
 
     private boolean parseOre(String[] properties, WorldModel world,
                              ImageStore imageStore) {
-        if (properties.length == Entity.ORE_NUM_PROPERTIES) {
-            Point pt = new Point(Integer.parseInt(properties[Entity.ORE_COL]),
-                    Integer.parseInt(properties[Entity.ORE_ROW]));
-            Entity entity = Entity.createOre(properties[Entity.ORE_ID],
-                    pt, Integer.parseInt(properties[Entity.ORE_ACTION_PERIOD]),
-                    imageStore.getImageList(Entity.ORE_KEY));
+        if (properties.length == Ore.ORE_NUM_PROPERTIES) {
+            Point pt = new Point(Integer.parseInt(properties[Ore.ORE_COL]),
+                    Integer.parseInt(properties[Ore.ORE_ROW]));
+            Entity entity = Entity.createOre(
+                    pt, Integer.parseInt(properties[Ore.ORE_ACTION_PERIOD]),
+                    imageStore.getImageList(Ore.ORE_KEY));
             tryAddEntity(world, entity);
         }
 
-        return properties.length == Entity.ORE_NUM_PROPERTIES;
+        return properties.length == Ore.ORE_NUM_PROPERTIES;
     }
 
     private boolean parseSmith(String[] properties, WorldModel world,
                                ImageStore imageStore) {
-        if (properties.length == Entity.SMITH_NUM_PROPERTIES) {
-            Point pt = new Point(Integer.parseInt(properties[Entity.SMITH_COL]),
-                    Integer.parseInt(properties[Entity.SMITH_ROW]));
-            Entity entity = Entity.createBlacksmith(properties[Entity.SMITH_ID],
-                    pt, imageStore.getImageList(Entity.SMITH_KEY));
+        if (properties.length == Blacksmith.SMITH_NUM_PROPERTIES) {
+            Point pt = new Point(Integer.parseInt(properties[Blacksmith.SMITH_COL]),
+                    Integer.parseInt(properties[Blacksmith.SMITH_ROW]));
+            Entity entity = Entity.createBlacksmith(pt, imageStore.getImageList(Blacksmith.SMITH_KEY));
             tryAddEntity(world, entity);
         }
 
-        return properties.length == Entity.SMITH_NUM_PROPERTIES;
+        return properties.length == Blacksmith.SMITH_NUM_PROPERTIES;
     }
 
     private boolean parseVein(String[] properties, WorldModel world,
                               ImageStore imageStore) {
-        if (properties.length == Entity.VEIN_NUM_PROPERTIES) {
-            Point pt = new Point(Integer.parseInt(properties[Entity.VEIN_COL]),
-                    Integer.parseInt(properties[Entity.VEIN_ROW]));
-            Entity entity = Entity.createVein(properties[Entity.VEIN_ID],
-                    pt,
-                    Integer.parseInt(properties[Entity.VEIN_ACTION_PERIOD]),
-                    imageStore.getImageList(Entity.VEIN_KEY));
+        if (properties.length == Vein.VEIN_NUM_PROPERTIES) {
+            Point pt = new Point(Integer.parseInt(properties[Vein.VEIN_COL]), Integer.parseInt(properties[Vein.VEIN_ROW]));
+            Entity entity = Entity.createVein(pt, Integer.parseInt(properties[Vein.VEIN_ACTION_PERIOD]), imageStore.getImageList(Vein.VEIN_KEY));
             tryAddEntity(world, entity);
         }
 
-        return properties.length == Entity.VEIN_NUM_PROPERTIES;
+        return properties.length == Vein.VEIN_NUM_PROPERTIES;
     }
 
     private void tryAddEntity(WorldModel world, Entity entity) {
@@ -295,8 +289,6 @@ final class WorldModel {
     private Background getBackgroundCell(Point pos) {
         return this.background[pos.y][pos.x];
     }
-
-
 
 
 }

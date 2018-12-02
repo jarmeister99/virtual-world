@@ -3,62 +3,80 @@ import processing.core.PImage;
 import java.util.List;
 import java.util.Optional;
 
-public class Miner implements Entity, Animated, Active{
+public class Miner extends Entity implements Animated, Active{
 
-    public String kind;
-    public Point position;
-    public List<PImage> images;
-    public int imageIndex;
-    public int actionPeriod;
+    public static final String MINER_KEY = "miner";
+    public static final int MINER_NUM_PROPERTIES = 7;
+    public static final int MINER_COL = 2;
+    public static final int MINER_ROW = 3;
+    public static final int MINER_LIMIT = 4;
+    public static final int MINER_ACTION_PERIOD = 5;
+    public static final int MINER_ANIMATION_PERIOD = 6;
+    public static final int ORE_REACH = 1;
 
-    private String id;
     private int resourceLimit;
     private int resourceCount;
     private int animationPeriod;
+    private int actionPeriod;
 
-    public Miner(String id, Point position,
+    public Miner(Point position,
                   List<PImage> images, int resourceLimit, int resourceCount,
                   int actionPeriod, int animationPeriod) {
-        this.kind = "MINER";
-        this.id = id;
-        this.position = position;
-        this.images = images;
-        this.imageIndex = 0;
+
+        super(position, "MINER", images, 0);
         this.resourceLimit = resourceLimit;
         this.resourceCount = resourceCount;
         this.actionPeriod = actionPeriod;
         this.animationPeriod = animationPeriod;
     }
 
+    public <R> R accept(EntityVisitor<R> visitor){
+        return visitor.visit(this);
+    }
+
+    public int getResourceLimit() {
+        return resourceLimit;
+    }
+
+    public int getResourceCount() {
+        return resourceCount;
+    }
+    // ANIMATED
+
     public int getAnimationPeriod() {
         return this.animationPeriod;
     }
-
-    @Override
     public int getRepeatCount() {
         return 0;
     }
 
-    public void nextImage() {
-        this.imageIndex = (this.imageIndex + 1) % this.images.size();
+    // ACTIVE
+
+    public void executeActivity(WorldModel world,
+                                ImageStore imageStore, EventScheduler scheduler) {
+        executeMinerNotFullActivity(world, imageStore, scheduler);
+    }
+
+    public int getActionPeriod() {
+        return this.actionPeriod;
     }
 
 
 
-    public void executeMinerNotFullActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
-        Optional<Entity> notFullTarget = world.findNearest(this.position, "ORE");
+    private void executeMinerNotFullActivity(WorldModel world, ImageStore imageStore, EventScheduler scheduler) {
+        Optional<Entity> notFullTarget = world.findNearest(getPosition(), "ORE");
 
         if (!notFullTarget.isPresent() ||
-                !moveToNotFull(world, notFullTarget.get(), scheduler) ||
+                !moveTo(world, notFullTarget.get(), scheduler) ||
                 !transformNotFull(world, scheduler, imageStore)) {
             scheduler.scheduleEvent(this, Entity.createActivityAction(world, imageStore, this), this.actionPeriod);
         }
     }
 
-    private boolean moveToNotFull(WorldModel world, Entity target, EventScheduler scheduler) {
+    private boolean moveTo(WorldModel world, Entity target, EventScheduler scheduler) {
 
         // if the miner is adjacent to the target
-        if (Point.adjacent(this.position, target.getPosition())) {
+        if (Point.adjacent(getPosition(), target.getPosition())) {
 
             // increment the miner's resources
             this.resourceCount += 1;
@@ -76,30 +94,17 @@ public class Miner implements Entity, Animated, Active{
             Point nextPos = nextPositionMiner(world, target.getPosition());
 
             // if the miner isn't already at the next spot they should be
-            if (!this.position.equals(nextPos)) {
-
-                // current occupant is evicted
-                Optional<Entity> occupant = world.getOccupant(nextPos);
-                if (occupant.isPresent()) {
-                    scheduler.unscheduleAllEvents(occupant.get());
-                }
-
-                // miner moves in
-                world.moveEntity(this, nextPos);
-            }
+            move(nextPos, world, scheduler);
             return false;
         }
     }
 
-    // TRANSFORM METHODS
-
-
     private boolean transformNotFull(WorldModel world,
                                      EventScheduler scheduler, ImageStore imageStore) {
         if (this.resourceCount >= this.resourceLimit) {
-            Entity miner = Entity.createMinerFull(this.id, this.resourceLimit,
-                    this.position, this.actionPeriod, this.animationPeriod,
-                    this.images);
+            Entity miner = Entity.createMinerFull(this.resourceLimit,
+                    getPosition(), this.actionPeriod, this.animationPeriod,
+                    getImages());
 
             world.removeEntity(this);
             scheduler.unscheduleAllEvents(this);
@@ -113,61 +118,26 @@ public class Miner implements Entity, Animated, Active{
         return false;
     }
 
+    public Point nextPositionMiner(WorldModel world, Point destPos) {
+        int horiz = Integer.signum(destPos.x - this.getPosition().x);
 
-    private Point nextPositionMiner(WorldModel world, Point destPos) {
-        int horiz = Integer.signum(destPos.x - this.position.x);
-
-        Point newPos = new Point(this.position.x + horiz,
-                this.position.y);
+        Point newPos = new Point(this.getPosition().x + horiz,
+                this.getPosition().y);
 
         if (horiz == 0 || world.isOccupied(newPos)) {
 
-            int vert = Integer.signum(destPos.y - this.position.y);
+            int vert = Integer.signum(destPos.y - this.getPosition().y);
 
-            newPos = new Point(this.position.x, this.position.y + vert);
+            newPos = new Point(this.getPosition().x, this.getPosition().y + vert);
 
             if (vert == 0 || world.isOccupied(newPos)) {
 
-                newPos = this.position;
+                newPos = this.getPosition();
             }
         }
 
         return newPos;
     }
 
-    @Override
-    public Point getPosition() {
-        return this.position;
-    }
 
-    @Override
-    public void setPosition(Point point) {
-        this.position = point;
-    }
-
-    @Override
-    public String getKind() {
-        return this.kind;
-    }
-
-    @Override
-    public void executeActivity(WorldModel world,
-                                ImageStore imageStore, EventScheduler scheduler) {
-        executeMinerNotFullActivity(world, imageStore, scheduler);
-    }
-
-    @Override
-    public int getActionPeriod() {
-        return this.actionPeriod;
-    }
-
-    @Override
-    public List<PImage> getImages(){
-        return this.images;
-    }
-
-    @Override
-    public int getImageIndex(){
-        return this.imageIndex;
-    }
 }

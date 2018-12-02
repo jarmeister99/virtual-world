@@ -4,11 +4,15 @@ final class EventScheduler {
     private PriorityQueue<Event> eventQueue;
     private Map<Entity, List<Event>> pendingEvents;
     private double timeScale;
+    private EntityVisitor isAnimated;
+    private EntityVisitor isActive;
 
     public EventScheduler(double timeScale) {
         this.eventQueue = new PriorityQueue<>(new EventComparator());
         this.pendingEvents = new HashMap<>();
         this.timeScale = timeScale;
+        this.isAnimated = new AnimatedEntityVisitor();
+        this.isActive = new ActiveEntityVisitor();
     }
 
     private void removePendingEvent(Event event) {
@@ -55,14 +59,13 @@ final class EventScheduler {
     }
 
     public void scheduleActions(Entity entity, WorldModel world, ImageStore imageStore){
-        if (entity instanceof Active){
+        if ((Boolean)entity.accept(isActive)){
             Active activeEntity = (Active) entity;
             this.scheduleEvent(entity, Entity.createActivityAction(world, imageStore, entity), activeEntity.getActionPeriod());
         }
-        if (entity instanceof Animated){
+        if ((Boolean)entity.accept(isAnimated)){
             Animated animatedEntity = (Animated) entity;
-            this.scheduleEvent(entity, Entity.createAnimationAction(animatedEntity.getRepeatCount(), entity), animatedEntity.getAnimationPeriod());
-        }
+            this.scheduleEvent(entity, Entity.createAnimationAction(animatedEntity.getRepeatCount(), entity), animatedEntity.getAnimationPeriod()); }
     }
 
 }
